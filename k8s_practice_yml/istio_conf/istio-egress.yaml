@@ -1,0 +1,117 @@
+# kubectl create secret generic kmbl-kgs-ca2 \
+#   -n mwf-services \
+#   --from-file=ca.crt=kgs.crt
+ 
+#  istio-egress-dest-rule.yaml
+ 
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: finacle-apis-tls
+  namespace: istio-egress
+spec:
+  host: fincbsuat.kotak.int
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      credentialName: kmbl-kgs-ca2
+      sni: fincbsuat.kotak.int
+ 
+---
+ 
+# cat istio-egress-kmbl-kds-ca2.yaml
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURtVENDQW9HZ0F3SUJBZ0lRTWVyVTQwQitsSmhCeEtQMzdueVVhekFOQmdrcWhraUc5dzBCQVFzRkFEQlQKTVJNd0VRWUtDWkltaVpQeUxHUUJHUllEWTI5dE1Sb3dHQVlLQ1pJbWlaUHlMR1FCR1JZS1MyOTBZV3RIY205MQpjREVnTUI0R0ExVUVBeE1YUzI5MFlXdEhjbTkxY0NBdElGTjBZVzVrWVd4dmJtVXdIaGNOTVRZd016RTRNVEF3Ck5UUTBXaGNOTkRFd016RTRNVEF4TlRReVdqQlRNUk13RVFZS0NaSW1pWlB5TEdRQkdSWURZMjl0TVJvd0dBWUsKQ1pJbWlaUHlMR1FCR1JZS1MyOTBZV3RIY205MWNERWdNQjRHQTFVRUF4TVhTMjkwWVd0SGNtOTFjQ0F0SUZOMApZVzVrWVd4dmJtVXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDOTJ1SURsRmpnCnU5Vk9nb2dDcVB1NCtGNERmbU9pSlFxY1VoRlpPZ0pJTmVsQ2FJS1E1VmMrekxYckJrUWNSbE5vZGpPNU43WDcKRUFXT0VsSnZFWStQTjZwRmtlWWJYUFBmazV3MEszSEJxSEcwTkdnMEp4bXJ0ZWlnUXlyVDdkaEFWRHM5MkNISApld1V3cmp2MFpVa0RkQVdjbnhNL1BId1NTeHY0dDJSNkVkOVJMNkF6OTBmbXpSV05vRmQvMDAvL2cySFhTWmJOCjNQZEVJbTBkbFRKUElodDEvcHBpVVdaazI1Zk5Gbk1aS093UDE3eTZDbHNVSzI2YjQvNUlHRDJQQ0ErMTR4dmcKYWwvRm16QW1hZko1M1hIYlBtV2JocnpQOEVySnVKZ0VKblIzSElWaFlvZXM2R2pEYlcvbURiRWhDWDZGQUNpbgphUkxwSnlUUkV4Z2RBZ01CQUFHamFUQm5NQk1HQ1NzR0FRUUJnamNVQWdRR0hnUUFRd0JCTUE0R0ExVWREd0VCCi93UUVBd0lCaGpBUEJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJTVFJobVdKL0RHZGFRcTVpaGkKSWo1aDNsWHk5akFRQmdrckJnRUVBWUkzRlFFRUF3SUJBREFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQ0ovMgptZ2w1YkliQksrWUs3eGlFcGF4cWNNNndBbitvM3dKYlVnRmRpRThzeXhIbkpsYmZBSzVHS3dZamI5UUxXZjFYClkwd3RLTVRXcWpQK1owMnk1SlJmMlBSWHlkNENac0FwVC9GU2xkREZWRUhoYWNocjVocTVlWjlKYzlTYk1Vc2cKd0hjNFZpMDFEUzVWQnVMMS9rTDZaUzY2NUIyNk1KRTA1dkgxcTJYZzlrZHVxVUVOY2JodlR3OXJDdXZIZTA3ZwpXL0tTcUZrNk1HNGM3MFhoUlE0SHpUZkhSUUltSzRCT0JCTmxuLzA5eXE0OFdmMlV3a2k1TGM4ZzFlNHVoc25lCnlEaGFMSXkzbUNhWG42eWlpbGRYSTJWaFF1cmY0Y2Z1M0VST2pJKzdCT0dZUmxlYjNlYUw3ZGZkWVJXSFJTNngKY3d5S2JvdTQxM0lpeGJoczNnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQoK
+kind: Secret
+metadata:
+  name: kmbl-kgs-ca2
+  namespace: istio-egress
+type: Opaque
+ 
+ 
+---
+ 
+# cat sidecar-app-pod-vs.yaml
+ 
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: finacle-api-envoy-vs
+  namespace: mwf-services
+spec:
+  hosts:
+  - fincbsuat.kotak.int
+  gateways:
+  - mesh
+  tls:
+  - match:
+    - port: 8091
+      sniHosts:
+       - fincbsuat.kotak.int
+    route:
+    - destination:
+        host: mwf-egress-gateway.istio-egress.svc.cluster.local
+        port:
+          number: 8091
+ 
+---
+ 
+# istio-egress namespace virtual service
+ 
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: finacle-api-gateway-vs
+  namespace: istio-egress
+spec:
+  gateways:
+  - mwf-egress-gateway
+  hosts:
+  - fincbsuat.kotak.int
+  http:
+  - match:
+    - port: 8091
+    route:
+    - destination:
+        host: fincbsuat.kotak.int
+        port:
+          number: 8091
+ 
+---
+# cat sidecar-service-entry.yaml
+ 
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: finacle-apis
+  namespace: mwf-services
+spec:
+  hosts:
+  - fincbsuat.kotak.int
+  ports:
+  - number: 8091
+    name: http-8091
+    protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
+ 
+ 
+---
+ 
+apiVersion: networking.istio.io/v1
+kind: Gateway                       # kubectl get gateways.networking.istio.io -A
+metadata:
+  name: mwf-egress-gateway
+  namespace: istio-egress
+spec:
+  selector:
+    istio: mwf-egress-gateway
+  servers:
+  - hosts:
+    - fincbsuat.kotak.int
+    port:
+      name: http-8091
+      number: 8091
+      protocol: HTTP
+ 

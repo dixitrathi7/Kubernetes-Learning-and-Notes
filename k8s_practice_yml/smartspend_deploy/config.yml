@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dev-smartspendops-frontend-env
+  namespace: test
+data:
+  .env: |
+    VITE_BASE_URL=http://dev-api.smartspendops.com
+    VITE_IMAGE_BASE_URL=https://d201gp0gc4bsb7.cloudfront.net
+    VITE_AUTH_ENCRYPT_ALGO=aes-256-cbc
+    VITE_AUTH_ENCRYPT_IV=66tXNvdyUDYMg9gvnRbGLg==
+    VITE_AUTH_ENCRYPT_KEY=Y9KgLwWDdRk88BUlavqaeTZwjTz6Gv32I0xmuWMu5nw=
+    VITE_ALLOW_RECOMMENDATION_AI=true

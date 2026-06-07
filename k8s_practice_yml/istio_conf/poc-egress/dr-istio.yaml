@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: egress-mtls
+  namespace: istio-system
+spec:
+  host: istio-egress-gwt.istio-system.svc.cluster.local  # which service this DestinationRule applies to
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100    # maximum number of connections to the service from the single client
+        connectTimeout: 30s    # timeout for establishing a connection to the service
+    # tls:
+    #   mode: ISTIO_MUTUAL

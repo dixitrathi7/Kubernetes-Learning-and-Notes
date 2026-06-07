@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: vote
+  name: vote
+  namespace: vote
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vote
+      version: vote
+  template:
+    metadata:
+      labels:
+        app: vote
+        version: vote
+    spec:
+      containers:
+      - image: dixit7/nextjs-app:v1
+ #     - image: dixit7/hotstar:v1
+        name: vote
+        ports:
+        - containerPort: 3000
+          name: vote
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: vote
+  name: vote
+  namespace: vote
+spec:
+  type: NodePort
+  ports:
+  - name: "vote-service"
+    port: 8080
+    targetPort: 3000
+    nodePort: 31000
+  selector:
+    app: vote
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: vote
+    version: vote2
+  name: vote2
+  namespace: vote
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vote
+      version: vote2
+  template:
+    metadata:
+      labels:
+        app: vote
+        version: vote2
+    spec:
+      containers:
+      - image: dixit7/hotstar:v1
+      #dixit7/hotstar:v1
+        name: vote2
+        ports:
+        - containerPort: 3000
+          name: vote2
+
+---
+
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  labels:
+#    app: vote
+#  name: vote2
+#  namespace: vote
+#spec:
+#  type: NodePort
+#  ports:
+#  - name: "vote2-service"
+#    port: 8080
+#    targetPort: 3000
+#    nodePort: 31100
+#  selector:
+#    version: vote2

@@ -1,0 +1,18 @@
+# Service-monitor.yml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: front-service-monitor
+  namespace: prom
+  labels:
+    release: prometheus          # Prometheus use only this label to monitor ServiceMonitors
+    app: prometheus              # optional, for your reference
+spec:
+  jobLabel: job                # use the "job" label in Service to group metrics in Prometheus
+  endpoints:
+    - interval: 30s
+      port: front
+      path: /metrics
+  selector:
+    matchLabels:
+      apps: ssfrontendapp      # select the Service with this label to monitor

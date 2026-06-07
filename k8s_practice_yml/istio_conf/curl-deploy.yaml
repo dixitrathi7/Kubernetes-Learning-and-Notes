@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curl
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-curl
+  template:
+    metadata:
+      labels:
+        app: test-curl
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - name: curl
+        image: curlimages/curl
+        command: ["sleep", "172800"]

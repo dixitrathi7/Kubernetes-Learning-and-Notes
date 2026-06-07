@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-drstrange-agw
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: drstrangesvc
+                port:
+                  number: 80
+

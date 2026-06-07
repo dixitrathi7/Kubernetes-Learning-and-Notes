@@ -1,0 +1,10 @@
+appgw:
+  subscriptionId: "d0d107c0-20c4-417c-b411-af14c15893af"
+  resourceGroup: "zoho-improzo-poc"
+  name: "agw-zohobackend-backend"
+  
+armAuth:
+  type: "UserAssignedManagedIdentity"
+  identityResourceID: "/subscriptions/d0d107c0-20c4-417c-b411-af14c15893af/resourceGroups/zoho-improzo-poc/providers/Microsoft.ManagedIdentity/userAssignedIdentities/user-mi-agic-zohobackend-backend"
+  identityClientID: "c45b0897-f6f7-46ae-afea-bab1dd0ff45a"
+

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smartpod
+  labels:
+    app: smartapp
+  namespace: default
+spec:
+  containers:
+  - name: smartcont
+    image: smartspend.azurecr.io/dev-smartspend-frontend:1
+    ports:
+    - containerPort: 3000
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ngninxpod
+  labels:
+    app: ngninxapp
+  namespace: nginx-ns
+spec:
+  containers:
+  - name: nginxcont
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginxsvc
+spec:
+  selector:
+    app: ngninxapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

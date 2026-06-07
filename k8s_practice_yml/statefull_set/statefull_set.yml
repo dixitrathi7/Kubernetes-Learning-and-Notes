@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: mysql
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      initContainers:
+      - name: init-mysql
+        image: busybox
+        command:
+          - sh
+          - -c
+          - |
+            ORDINAL=$(echo ${HOSTNAME} | awk -F'-' '{print $NF}')
+            SERVER_ID=$((100 + ORDINAL))
+
+            echo "[mysqld]" > /config/my.cnf
+            echo "server-id=${SERVER_ID}" >> /config/my.cnf
+            echo "log-bin=mysql-bin" >> /config/my.cnf
+            echo "binlog-format=ROW" >> /config/my.cnf
+            echo "relay-log=relay-bin" >> /config/my.cnf
+
+            echo "Generated my.cnf:"
+            cat /config/my.cnf
+        volumeMounts:
+        - name: config
+          mountPath: /config
+
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-root-password
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+        - name: config
+          mountPath: /etc/mysql/conf.d
+      volumes:
+      - name: config
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 3Gi
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  clusterIP: None
+  ports:
+    - port: 3306
+  selector:
+    app: mysql

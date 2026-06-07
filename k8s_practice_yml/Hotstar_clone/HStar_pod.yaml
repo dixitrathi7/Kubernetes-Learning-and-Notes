@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hotstarpod
+  labels:
+    app: hotstarapp
+  namespace: test
+spec:
+  containers:
+  - name: hotstarcontainer
+    image: dixit7/hotstar:v3
+    ports:
+    - containerPort: 3000

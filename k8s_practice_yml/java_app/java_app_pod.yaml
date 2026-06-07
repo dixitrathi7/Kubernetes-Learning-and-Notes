@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: javapod
+  labels:
+    app: javaapp
+  namespace: test
+spec:
+  containers:
+  - name: javacont
+    image: dixit7/webapp:2
+    ports:
+    - containerPort: 8080

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssbackend-deployment
+  namespace: test
+  annotations:
+    kubernetes.io/change-cause: "h2h backend env"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssbackendapp
+  template:
+    metadata:
+      labels:
+        app: ssbackendapp
+    spec:
+      containers:
+      - name: ssbackendcontainer
+        image: devrefactorq.azurecr.io/k8s-ssp-backend:ch-prisma
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "100m"
+          limits:
+            memory: "10Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8000
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssbackendsvc
+  namespace: test
+spec:
+  type: ClusterIP
+  selector:
+    app: ssbackendapp
+  ports:
+  - port: 8000
+    targetPort: 8000
+

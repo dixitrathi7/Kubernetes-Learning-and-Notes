@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: egress-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-egress-gwt  # ✅ Matches your pod label
+    # Also add istio=egress-gwt to be more specific
+    istio: egress-gwt
+  servers:
+  - port:
+      number: 443
+      name: tls
+      protocol: TLS
+    hosts:
+    - www.google.com
+    tls:
+      mode: PASSTHROUGH  # it allow the traffic to pass through the gateway without terminating TLS

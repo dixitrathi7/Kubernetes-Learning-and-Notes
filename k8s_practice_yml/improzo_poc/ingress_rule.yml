@@ -1,0 +1,80 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-frontend-agw
+  namespace: test
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ssfrontendsvc 
+                port:
+                  number: 3000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-backend-agw
+  namespace: test
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: api-aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ssbackendsvc 
+                port:
+                  number: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-argocd-agw
+  namespace: argocd
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: argocd.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cd-v1-argocd-server
+                port:
+                  number: 8081
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-argocd-https-agw
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: argocds.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cd-v1-argocd-server
+                port:
+                  number: 8082

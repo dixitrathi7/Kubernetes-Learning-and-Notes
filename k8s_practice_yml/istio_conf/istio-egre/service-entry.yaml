@@ -1,0 +1,61 @@
+# VirtualService for tibcouat.kotak.com
+
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tibco-api-gateway-vs
+  namespace: istio-egress
+spec:
+  gateways:
+  - mwf-egress-gateway
+  hosts:
+  - tibcouat.kotak.com
+  http:
+  - match:
+    - port: 10268
+    route:
+    - destination:
+        host: tibcouat.kotak.com
+        port:
+          number: 10268
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: tibco-apis
+  namespace: mwf-services
+spec:
+  hosts:
+  - tibcouat.kotak.com
+  ports:
+  - number: 10268
+    name: http-10268
+    protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
+
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: Gateway                       # kubectl get gateways.networking.istio.io -A
+metadata:
+  name: mwf-egress-gateway
+  namespace: istio-egress
+spec:
+  selector:
+    istio: mwf-egress-gateway
+  servers:
+  - hosts:
+    - tibcouat.kotak.com
+    port:
+      name: http-8091
+      number: 8091
+      protocol: HTTP
+
+
+---
+
+ 

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssfrontend-deployment
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssfrontendapp
+  template:
+    metadata:
+      labels:
+        app: ssfrontendapp
+    spec:
+      containers:
+      - name: ssfrontendcontainer
+        image: devrefactorq.azurecr.io/k8s-ssp-frontend:noenv
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "50m"
+          limits:
+            memory: "10Gi"
+            cpu: "100m"
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: dev-smartspendops-frontend-env
+          mountPath: /app/.env
+          subPath: .env
+      
+      volumes:
+      - name: dev-smartspendops-frontend-env
+        configMap:
+          name: dev-smartspendops-frontend-env
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssfrontendsvc
+  namespace: test
+spec:
+  type: ClusterIP
+  selector:
+    app: ssfrontendapp
+  ports:
+  - port: 3000
+    targetPort: 3000
+

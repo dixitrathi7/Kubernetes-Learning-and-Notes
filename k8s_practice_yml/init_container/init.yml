@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotstar-deployment
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotstarapp
+  template:
+    metadata:
+      labels:
+        app: hotstarapp
+    spec:
+      initContainers:
+      - name: init-hotstar
+        image: busybox
+        command: ['sh', '-c', 'echo "testing init container poc" > /init-data/init-file.txt']
+        volumeMounts:
+        - name: init-volume
+          mountPath: /init-data
+      containers:
+      - name: hotstarcontainer
+        image: dixit7/hotstar:v1
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "500m"
+          limits:
+            memory: "200Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: init-volume
+          mountPath: /init-data
+
+      volumes:
+      - name: init-volume
+        emptyDir: {}
+

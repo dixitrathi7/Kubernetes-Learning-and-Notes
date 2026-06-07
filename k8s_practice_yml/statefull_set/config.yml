@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  my.cnf: |
+    [mysqld]
+    server-id=1
+    log-bin=mysql-bin
+    binlog-format=ROW
+    relay-log=relay-bin
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  mysql-root-password: cGFzc3dvcmQ=        # password
+  mysql-repl-password: cmVwbHBhc3M=        # replpass

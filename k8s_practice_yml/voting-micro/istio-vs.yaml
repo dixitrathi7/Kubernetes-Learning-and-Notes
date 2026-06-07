@@ -1,0 +1,77 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: vote-gateway
+  namespace: vote
+spec:
+  selector:
+    app: istio-gwt   # matches your pod label
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "aksdemo.refactorq.com"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vote-vs
+  namespace: vote
+spec:
+  hosts:
+  - vote.vote.svc.cluster.local
+  gateways:
+  - vote-gateway
+  http:
+  - route:
+    - destination:
+        host: vote.vote.svc.cluster.local
+        subset: vote
+        port:
+          number: 8080
+      weight: 50     
+    - destination:
+        host: vote.vote.svc.cluster.local
+        subset: vote2
+        port:
+          number: 8080
+      weight: 50
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: vote-dr
+  namespace: vote
+spec:
+  host: vote.vote.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+  - name: vote
+    labels:
+      version: vote
+  - name: vote2
+    labels:
+      version: vote2
+
+#---
+
+#apiVersion: networking.istio.io/v1beta1
+#kind: DestinationRule
+#metadata:
+#  name: vote2-dr
+#  namespace: vote
+#spec:
+#  host: vote2.vote.svc.cluster.local
+#  trafficPolicy:
+#    loadBalancer:
+#      simple: ROUND_ROBIN
+#  subsets:
+#  - name: vote2
+#    labels:
+#      version: vote2

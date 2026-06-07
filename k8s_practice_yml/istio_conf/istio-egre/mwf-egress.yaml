@@ -1,0 +1,81 @@
+
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-api
+  namespace: test
+spec:
+  hosts:
+  - www.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: TLS   # or TCP for DBs
+  resolution: DNS   # or STATIC if IP known
+  location: MESH_EXTERNAL
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: egress-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-egress-gwt   # matches label on egress gateway pods
+  servers:
+  - port:
+      number: 443
+      name: tls
+      protocol: TLS
+    hosts:
+    - www.google.com
+    tls:
+      mode: PASSTHROUGH 
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: route-to-egress
+spec:
+  hosts:
+  - www.google.com
+  gateways:
+  - mesh   # applies to sidecars inside mesh
+  - egress-gateway  # also applies to egress gateway itself
+  http:
+  - match:
+    - gateways:
+      - mesh
+    route:
+    - destination:
+        host: istio-egress-gwt.istio-system.svc.cluster.local
+        port:
+          number: 443
+  - match:
+    - gateways:
+      - egress-gateway
+    route:
+    - destination:
+        host: www.google.com
+        port:
+          number: 443
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: egress-mtls
+  namespace: test
+spec:
+  host: istio-egress-gwt.istio-system.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+    tls:
+      mode: ISTIO_MUTUAL   # mTLS with Istio certs

@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-frontend-agw
+  namespace: test
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ssfrontendsvc
+                port:
+                  number: 3000
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-backend-agw
+  namespace: test
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api-aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ssfrontendsvc
+                port:
+                  number: 3000
+
+
+

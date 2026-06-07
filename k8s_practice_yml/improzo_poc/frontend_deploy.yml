@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssfrontend-deployment
+ # namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssfrontendapp
+  template:
+    metadata:
+      labels:
+        app: ssfrontendapp
+    spec:
+      containers:
+      - name: ssfrontendcontainer
+        image: dixit7/hotstar:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "50m"
+          limits:
+            memory: "10Gi"
+            cpu: "100m"
+        ports:
+        - containerPort: 3000
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssfrontendsvc
+#  namespace: test
+  labels:
+    job: frontend-job
+    apps: ssfrontendapp
+spec:
+  type: ClusterIP
+  selector:
+    app: ssfrontendapp
+  ports:
+  - name: front
+    protocol: TCP
+    port: 3000
+    targetPort: 3000
+

@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-frontend-agw
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vote
+                port:
+                  number: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-result-app-agw
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: api-aksdemo.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: result
+                port:
+                  number: 8081
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-rule-argo-cd-app-agw
+spec:
+  ingressClassName: azure-application-gateway
+  rules:
+    - host: argocd.refactorq.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: result
+                port:
+                  number: 8080

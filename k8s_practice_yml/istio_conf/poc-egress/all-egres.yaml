@@ -1,0 +1,94 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: egress-mtls
+  namespace: istio-system
+spec:
+  host: istio-egress-gwt.istio-system.svc.cluster.local  # which service this DestinationRule applies to
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100    # maximum number of connections to the service from the single client
+        connectTimeout: 30s    # timeout for establishing a connection to the service
+    # tls:
+    #   mode: ISTIO_MUTUAL
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: egress-gateway
+  namespace: istio-system
+spec:
+  selector:
+    app: istio-egress-gwt  # ✅ Matches your pod label
+    # Also add istio=egress-gwt to be more specific
+    istio: egress-gwt
+  servers:
+  - port:
+      number: 443
+      name: tls
+      protocol: TLS
+    hosts:
+    - www.google.com
+    tls:
+      mode: PASSTHROUGH  # it allow the traffic to pass through the gateway without terminating TLS
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-api
+  namespace: istio-system
+spec:
+  hosts:
+  - www.google.com
+  ports:
+  - number: 443
+    name: https
+    protocol: TLS
+  resolution: DNS  # Use DNS resolution for external services other options include NONE, STATIC, and PASSTHROUGH
+  location: MESH_EXTERNAL
+  # Add this to ensure endpoints are discovered
+  # endpoints:
+  # - address: www.google.com
+
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: route-to-egress
+  namespace: istio-system
+spec:
+  hosts:
+  - www.google.com
+  gateways:
+  - mesh
+  - istio-system/egress-gateway  # Use full namespace/gateway name
+  tls:  # Use tls protocol since you're using TLS PASSTHROUGH
+  - match:
+    - gateways:
+      - mesh
+      port: 443
+      sniHosts:
+      - www.google.com
+    route:
+    - destination:
+        host: istio-egress-gwt.istio-system.svc.cluster.local
+        port:
+          number: 443
+  - match:
+    - gateways:
+      - istio-system/egress-gateway
+      port: 443
+      sniHosts:
+      - www.google.com
+    route:
+    - destination:
+        host: www.google.com
+        port:
+          number: 443
+

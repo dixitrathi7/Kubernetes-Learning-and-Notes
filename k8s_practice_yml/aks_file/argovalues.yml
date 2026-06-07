@@ -1,0 +1,42 @@
+global:
+  domain: argocd.refactorq.com
+
+configs:
+  params:
+    server.insecure: true
+
+redis-ha:
+  enabled: true
+
+controller:
+  replicas: 1
+
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+  ingress:
+    enabled: true
+    controller: generic                     # IMPORTANT
+    ingressClassName: azure-application-gateway
+
+    hosts:
+      - argocd.refactorq.com
+
+    annotations:
+      appgw.ingress.kubernetes.io/backend-protocol: http
+
+    tls: false
+
+repoServer:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+
+applicationSet:
+  replicas: 2

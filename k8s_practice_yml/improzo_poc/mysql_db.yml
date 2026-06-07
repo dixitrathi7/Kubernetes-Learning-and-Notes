@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysqldeploy
+  namespace: test
+spec:
+  serviceName: mysqlservice
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      serviceAccountName: zoho-service-account
+      containers:
+      - name: mysqlcontainer
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          value: dev_prisma_development
+  
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/mysql
+        - name: secrets-store-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true    
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "azure-keyvault-secrets"
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 2Gi
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqlservice
+  namespace: test
+spec:
+  clusterIP: None
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: mysql
