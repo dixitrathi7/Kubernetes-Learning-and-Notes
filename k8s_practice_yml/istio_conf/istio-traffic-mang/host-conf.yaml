@@ -1,0 +1,100 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tibco-api-envoy-vs
+  namespace: mwf-services
+spec:
+  gateways:
+  - mesh
+  hosts:
+  - tibcouat.bank.com
+  http:
+  - match:
+    - port: 10268
+    route:
+    - destination:
+        host: mwf-egress-gateway.istio-egress.svc.cluster.local
+        port:
+          number: 8081
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: tibco-apis
+  namespace: mwf-services
+spec:
+  exportTo:
+  - istio-egress
+  - mwf-services
+  hosts:
+  - tibcouat.bank.com
+  location: MESH_EXTERNAL
+  ports:
+  - name: http-10268
+    number: 10268
+    protocol: HTTP
+  resolution: DNS
+status:
+  addresses:
+  - host: tibcouat.bank.com
+    value: 240.240.0.8
+  - host: tibcouat.bank.com
+    value: 2001:2::8
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: tibco-apis-tls
+  namespace: istio-egress
+spec:
+  host: tibcouat.bank.com
+  trafficPolicy:
+    tls:
+      credentialName: kmbl-tibco-ca
+      mode: SIMPLE
+      sni: tibcouat.bank.com
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: mwf-egress-gateway
+  namespace: istio-egress
+spec:
+  selector:
+    istio: mwf-egress-gateway
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: http-8081
+      number: 8081
+      protocol: http
+    tls:
+      mode: PASSTHROUGH
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tibco-api-gateway-vs
+  namespace: istio-egress
+spec:
+  gateways:
+  - mwf-egress-gateway
+  hosts:
+  - tibcouat.bank.com
+  http:
+  - route:
+    - destination:
+        host: tibcouat.bank.com
+        port:
+          number: 10268
+
+ 
