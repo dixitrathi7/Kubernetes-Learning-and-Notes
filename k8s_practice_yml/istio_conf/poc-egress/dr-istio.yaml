@@ -10,5 +10,5 @@ spec:
       tcp:
         maxConnections: 100    # maximum number of connections to the service from the single client
         connectTimeout: 30s    # timeout for establishing a connection to the service
-    # tls:
-    #   mode: ISTIO_MUTUAL
+    tls:
+      mode: DISABLE

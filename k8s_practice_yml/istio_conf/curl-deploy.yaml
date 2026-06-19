@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-curl
+      app: curl
   template:
     metadata:
       labels:
-        app: test-curl
+        app: curl
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
