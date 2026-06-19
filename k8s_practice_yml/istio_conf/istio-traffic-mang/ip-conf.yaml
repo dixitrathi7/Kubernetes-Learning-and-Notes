@@ -1,0 +1,81 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tibco-api-envoy-vs2
+  namespace: mwf-services
+spec:
+  gateways:
+  - mesh
+  hosts:
+  - tibco-ip.internal
+  - 10.240.20.225
+  http:
+  - match:
+    - port: 9271
+    route:
+    - destination:
+        host: mwf-egress-gateway.istio-egress.svc.cluster.local
+        port:
+          number: 8081
+
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: tibco-apis2
+  namespace: mwf-services
+spec:
+  addresses:
+  - 10.240.20.225/32
+  endpoints:
+  - address: 10.240.20.225
+  exportTo:
+  - istio-egress
+  - mwf-services
+  hosts:
+  - tibco-ip.internal
+  location: MESH_EXTERNAL
+  ports:
+  - name: http-9271
+    number: 9271
+    protocol: HTTP
+  resolution: STATIC
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: tibco-apis-tls2
+  namespace: istio-egress
+spec:
+  host: tibco-ip.internal
+  trafficPolicy:
+    tls:
+      insecureSkipVerify: true
+      mode: SIMPLE
+
+---
+
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: tibco-api-gateway-vs2
+  namespace: istio-egress
+spec:
+  gateways:
+  - mwf-egress-gateway
+  hosts:
+  - tibco-ip.internal
+  - 10.240.20.225
+  http:
+  - route:
+    - destination:
+        host: tibco-ip.internal
+        port:
+          number: 9271
+
+
+ 
