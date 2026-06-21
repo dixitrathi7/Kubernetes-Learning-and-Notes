@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hotstar
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/dixitrathi7/GitOps_K8s_manifest.git
+    targetRevision: HEAD
+    path: hotstar_clone_manifest
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
